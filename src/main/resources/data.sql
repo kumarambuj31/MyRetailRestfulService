@@ -1,0 +1,5 @@
+CREATE TABLE ProductPrice (
+  id INT PRIMARY KEY,
+  price VARCHAR(250) NOT NULL,
+  currencyCode VARCHAR(250) NOT NULL,
+);
