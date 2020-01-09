@@ -10,7 +10,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @AllArgsConstructor
-@ToString
+@ToString(includeFieldNames = true)
 public class ProductDetails {
     private int id;
     private String name;

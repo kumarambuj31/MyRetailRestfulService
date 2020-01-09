@@ -1,5 +1,6 @@
 package com.target.casestudy.myretailrestfulservice.controller;
 
+import com.target.casestudy.myretailrestfulservice.exception.ResourceNotFoundException;
 import com.target.casestudy.myretailrestfulservice.model.ProductDetails;
 import com.target.casestudy.myretailrestfulservice.service.ProductDetailsService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class ProductDetailsController {
 	
 	
 	@RequestMapping(value="product/{id}",method= RequestMethod.GET)
-	public ProductDetails getProductDetails(@PathVariable int id) throws HttpClientErrorException, IOException, URISyntaxException {
+	public ProductDetails getProductDetails(@PathVariable int id) throws HttpClientErrorException, IOException, URISyntaxException, ResourceNotFoundException {
 		log.info("inside controller getProductDetails id :{}",id);
 		ProductDetails prodDetails=null;
 		prodDetails=productDetailsService.getProductDetails(id);
@@ -35,7 +36,7 @@ public class ProductDetailsController {
 		log.info("inside controller putProductDetails id :{}",id);
 		log.info("inside controller putProductDetails requestBody :{}",prodDetails);
 		ProductDetails updatedProductDetails=productDetailsService.putProductDetails(id, prodDetails);
-		log.info(" updated putProductDetails :{}",updatedProductDetails);
+		log.info(" updated putProductDetails :{}",updatedProductDetails.toString());
 		return updatedProductDetails;
 	}
 }

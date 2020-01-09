@@ -2,6 +2,7 @@ package com.target.casestudy.myretailrestfulservice.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.target.casestudy.myretailrestfulservice.exception.ResourceNotFoundException;
 import com.target.casestudy.myretailrestfulservice.model.ProductDetails;
 import com.target.casestudy.myretailrestfulservice.model.ProductPrice;
 import com.target.casestudy.myretailrestfulservice.repository.ProductPriceRepository;
@@ -35,7 +36,7 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 	
 	
 	@Override
-	public ProductDetails getProductDetails(int id) throws IOException {
+	public ProductDetails getProductDetails(int id) throws IOException, ResourceNotFoundException {
 		log.info("in  getProductDetails ");
 		log.debug("id: "+id);
 		String productName=getProductName(id);
@@ -88,13 +89,13 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 		if(productPriceRepository.findById(newProductPrice.getId())!=null){
 			newProductPrice=productPriceRepository.save(newProduct.getProductPrice());
 		}else{
-			log.error("price detail null exception thrown");
+			log.error("price detail null");
 		}
 		log.debug("newProductPrice : "+newProductPrice);
 		return newProductPrice;
 	}
 	
-	private String getProductName(int id) throws IOException {
+	private String getProductName(int id) throws IOException, ResourceNotFoundException {
 		log.info("in getProductName");
 		URL url = new URL(env.getProperty("target.restUrl1")+id+env.getProperty("target.restUrl2"));
 		URLConnection conn = url.openConnection();
@@ -102,42 +103,45 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 		if (redirect != null){
 			conn = new URL(redirect).openConnection();
 		}
-		BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-		String output;
-		log.debug("Output from Server ....");
-		StringBuffer sb = new StringBuffer();
-		while ((output = br.readLine()) != null) {
-			log.info(output);
-			sb.append(output);
-		}
+		try(BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())))) {
+			String output;
+			log.debug("Output from Server ....");
+			StringBuffer sb = new StringBuffer();
+			while ((output = br.readLine()) != null) {
+				log.info(output);
+				sb.append(output);
+			}
 
-		ObjectMapper mapper = new ObjectMapper();
-		String productName="";
-		try {
-			JsonNode root=null;
-			String jsonString=sb.toString();
-			if(jsonString!=null||!"".equals(jsonString)){
-				root = mapper.readTree(jsonString);
-				if(root.findValue("product")!=null){
-					root=root.findValue("product");
-					if(root.findValue("item")!=null){
-						root=root.findValue("item");
-						if(root.findValue("product_description")!=null){
-							root=root.findValue("product_description");
-							if(root.findValue("title")!=null){
-								productName=root.findValue("title").asText();
+			ObjectMapper mapper = new ObjectMapper();
+			String productName = "";
+			try {
+				JsonNode root = null;
+				String jsonString = sb.toString();
+				if (jsonString != null || !"".equals(jsonString)) {
+					root = mapper.readTree(jsonString);
+					if (root.findValue("product") != null) {
+						root = root.findValue("product");
+						if (root.findValue("item") != null) {
+							root = root.findValue("item");
+							if (root.findValue("product_description") != null) {
+								root = root.findValue("product_description");
+								if (root.findValue("title") != null) {
+									productName = root.findValue("title").asText();
+								}
 							}
 						}
 					}
 				}
+				log.debug("productName : " + productName);
+			} catch (IOException e) {
+				log.error("Parsing failed IOException " + e.getMessage());
+				throw new IOException(e.getMessage());
 			}
-			log.debug("productName : "+productName);
-		} 
-		catch (IOException e) {
-			log.error("Parsing failed IOException "+e.getMessage());
-			throw new IOException(e.getMessage());
+			return productName;
+		}catch(Exception exception){
+			log.error("Exception occured:{}",exception);
+			throw new ResourceNotFoundException(exception.getMessage());
 		}
-		return productName;
 	}
 
 }
