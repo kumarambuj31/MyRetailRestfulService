@@ -23,7 +23,7 @@ public class ProductDetailsController {
 	
 	@RequestMapping(value="product/{id}",method= RequestMethod.GET)
 	public ProductDetails getProductDetails(@PathVariable int id) throws HttpClientErrorException, IOException, URISyntaxException {
-		log.info("in controller getProductDetails id :"+id);
+		log.info("inside controller getProductDetails id :{}",id);
 		ProductDetails prodDetails=null;
 		prodDetails=productDetailsService.getProductDetails(id);
 		log.info(" return productDetails :"+prodDetails);
@@ -32,10 +32,10 @@ public class ProductDetailsController {
 	
 	@RequestMapping(value="product/{id}",method= RequestMethod.PUT)
 	public ProductDetails putProductDetails(@PathVariable int id, @RequestBody ProductDetails prodDetails) throws Exception{
-		log.info("in controller putProductDetails id :"+id);
-		log.info("in controller putProductDetails requestBody :"+prodDetails);
+		log.info("inside controller putProductDetails id :{}",id);
+		log.info("inside controller putProductDetails requestBody :{}",prodDetails);
 		ProductDetails updatedProductDetails=productDetailsService.putProductDetails(id, prodDetails);
-		log.info(" updated putProductDetails :"+updatedProductDetails);
+		log.info(" updated putProductDetails :{}",updatedProductDetails);
 		return updatedProductDetails;
 	}
 }

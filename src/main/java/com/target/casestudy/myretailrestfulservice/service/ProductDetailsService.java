@@ -1,6 +1,5 @@
 package com.target.casestudy.myretailrestfulservice.service;
 
-import com.example.casestudy.MyRetailRestfulService.exception.DatabaseException;
 import com.target.casestudy.myretailrestfulservice.model.ProductDetails;
 import org.springframework.web.client.HttpClientErrorException;
 

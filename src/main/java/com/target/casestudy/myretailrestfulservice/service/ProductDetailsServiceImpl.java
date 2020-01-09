@@ -1,10 +1,10 @@
 package com.target.casestudy.myretailrestfulservice.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.target.casestudy.myretailrestfulservice.model.ProductDetails;
 import com.target.casestudy.myretailrestfulservice.model.ProductPrice;
 import com.target.casestudy.myretailrestfulservice.repository.ProductPriceRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Optional;
@@ -30,22 +29,21 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 	@Autowired
 	private ProductPriceRepository productPriceRepository;
 	@Autowired
-	private ProductDetailsServiceImpl _productDetailsServiceImpl;
+	private ProductDetailsServiceImpl productDetailsServiceImpl;
 	@Autowired
 	private Environment env;
 	
 	
 	@Override
-	public ProductDetails getProductDetails(int id) throws IOException, URISyntaxException {
+	public ProductDetails getProductDetails(int id) throws IOException {
 		log.info("in  getProductDetails ");
 		log.debug("id: "+id);
 		String productName=getProductName(id);
 		log.debug("productName: "+productName);
-		Optional<ProductPrice> prodPrice= Optional.ofNullable(_productDetailsServiceImpl.getProductPrice(id));
+		Optional<ProductPrice> prodPrice= Optional.ofNullable(productDetailsServiceImpl.getProductPrice(id));
 		ProductPrice productPrice = null;
 		if(prodPrice.isPresent()){
 			productPrice = prodPrice.get();
-			log.error("price detail null");
 		}
 		ProductDetails prodDetails= new ProductDetails(id,productName,productPrice);
 		log.debug("prodDetails: "+prodDetails);
@@ -54,7 +52,7 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 
 	@Override
 	public ProductDetails putProductDetails(int id, ProductDetails newProduct) throws Exception{
-		log.info("in putProductDetails");
+		log.info("inside putProductDetails");
 		log.debug(" newProduct : "+newProduct);
 		if(id!=newProduct.getId()){
 			throw new Exception(" Product price cannot be updated, request body json should have matching id with path variable.");
@@ -66,7 +64,7 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 		newProductPrice.setId(id);
 		String productName=getProductName(id);
 		newProduct.setName(productName);
-		newProductPrice=_productDetailsServiceImpl.updateProductPrice(id,newProduct);
+		newProductPrice=productDetailsServiceImpl.updateProductPrice(id,newProduct);
 		
 		newProduct.setProductPrice(newProductPrice);
 		return newProduct;
@@ -74,7 +72,7 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 	
 	@Cacheable(value = "productPriceCache", key = "#id", unless="#result == null")
 	public ProductPrice getProductPrice(int id){
-		log.info("in getProductPrice");
+		log.info("inside getProductPrice");
 		log.debug("id : "+id);
 		ProductPrice prodPrice=productPriceRepository.findById(id);
 		log.debug("prodPrice : "+prodPrice);
@@ -84,7 +82,7 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 	
 	@CachePut(value = "productPriceCache", key = "#id", unless="#result == null")
 	public ProductPrice updateProductPrice(int id,ProductDetails newProduct){
-		log.info("in updateProductPrice");
+		log.info("inside updateProductPrice");
 		ProductPrice newProductPrice=newProduct.getProductPrice();
 		newProductPrice.setId(id);
 		if(productPriceRepository.findById(newProductPrice.getId())!=null){
@@ -96,7 +94,7 @@ public class ProductDetailsServiceImpl implements ProductDetailsService {
 		return newProductPrice;
 	}
 	
-	private String getProductName(int id) throws IOException, URISyntaxException {
+	private String getProductName(int id) throws IOException {
 		log.info("in getProductName");
 		URL url = new URL(env.getProperty("target.restUrl1")+id+env.getProperty("target.restUrl2"));
 		URLConnection conn = url.openConnection();
